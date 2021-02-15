@@ -7,6 +7,7 @@
 #include <costmap_2d/layer.h>
 #include <costmap_2d/layered_costmap.h>
 #include <hanp_msgs/TrackedHumans.h>
+#include <hanp_msgs/StateArray.h>
 #include <hanp_msgs/TrackedSegmentType.h>
 #include <dynamic_reconfigure/server.h>
 #include <boost/thread.hpp>
@@ -41,8 +42,10 @@ protected:
   };
 
   void humansCB(const hanp_msgs::TrackedHumans& humans);
-  ros::Subscriber humans_sub_;
+  void statesCB(const hanp_msgs::StateArray& states);
+  ros::Subscriber humans_sub_, humans_states_sub_;
   hanp_msgs::TrackedHumans humans_;
+  hanp_msgs::StateArray states_;
   std::vector<HumanPoseVel> transformed_humans_;
   ros::Duration people_keep_time_;
   boost::recursive_mutex lock_;

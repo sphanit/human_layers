@@ -121,7 +121,7 @@ void StaticHumanLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i
 
     double bx = ox + res / 2,
            by = oy + res / 2;
-           
+
     for (int i = start_x; i < end_x; i++)
     {
       for (int j = start_y; j < end_y; j++)
