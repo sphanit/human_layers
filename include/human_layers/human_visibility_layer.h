@@ -1,17 +1,17 @@
 //Created by Phani Teja Singamaneni
-#ifndef STATIC_HUMAN_LAYER_H
-#define STATIC_HUMAN_LAYER_H
+#ifndef HUMAN_VISIBILITY_LAYER_H
+#define HUMAN_VISIBILITY_LAYER_H
 #include <ros/ros.h>
 #include <human_layers/human_layer.h>
 #include <dynamic_reconfigure/server.h>
-#include <human_layers/HumanLayerConfig.h>
+#include <human_layers/HumanVLayerConfig.h>
 
 namespace human_layers
 {
-class StaticHumanLayer : public HumanLayer
+class HumanVisibilityLayer : public HumanLayer
 {
 public:
-  StaticHumanLayer()
+  HumanVisibilityLayer()
   {
     layered_costmap_ = NULL;
   }
@@ -21,10 +21,10 @@ public:
   virtual void updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);
 
 protected:
-  void configure(HumanLayerConfig &config, uint32_t level);
-  dynamic_reconfigure::Server<HumanLayerConfig>* server_;
-  dynamic_reconfigure::Server<HumanLayerConfig>::CallbackType f_;
+  void configure(HumanVLayerConfig &config, uint32_t level);
+  dynamic_reconfigure::Server<HumanVLayerConfig>* server_;
+  dynamic_reconfigure::Server<HumanVLayerConfig>::CallbackType f_;
 };
 }  // namespace human_layers
 
-#endif  // STATIC_HUMAN_LAYER_H
+#endif  // HUMAN_VISIBILITY_LAYER_H

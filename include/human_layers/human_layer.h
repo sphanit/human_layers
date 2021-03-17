@@ -42,15 +42,47 @@ protected:
   };
 
   void humansCB(const hanp_msgs::TrackedHumans& humans);
+
   void statesCB(const hanp_msgs::StateArray& states);
+
+  double Guassian1D(double x, double x0, double A, double varx){
+    double dx = x-x0;
+    return A*exp(-pow(dx,2.0)/(2.0*varx));
+  }
+
+  double Gaussian2D(double x, double y, double x0, double y0, double A, double varx, double vary)
+  {
+    double dx = x - x0, dy = y - y0;
+    double d = sqrt(dx * dx + dy * dy);
+    double theta = atan2(dy, dx);
+    double X = d*cos(theta), Y = d*sin(theta);
+    return A/std::max(d,1.0) * Guassian1D(X,0.0,1.0,varx) * Guassian1D(Y,0.0,1.0,vary);
+  }
+
+  double Gaussian2D_skewed(double x, double y, double x0, double y0, double A, double varx, double vary, double skew_ang)
+  {
+    double dx = x - x0, dy = y - y0;
+    double d = sqrt(dx * dx + dy * dy);
+    double theta = atan2(dy, dx);
+    double X = d*cos(theta-skew_ang), Y = d*sin(theta-skew_ang);
+    return A/std::max(d,1.0) * Guassian1D(X,0.0,1.0,varx) * Guassian1D(Y,0.0,1.0,vary);
+  }
+
+  double getRadius(double cutoff, double A, double var)
+  {
+    return sqrt(-2 * var * log(cutoff / A));
+  }
+
   ros::Subscriber humans_sub_, humans_states_sub_;
   hanp_msgs::TrackedHumans humans_;
   hanp_msgs::StateArray states_;
   std::vector<HumanPoseVel> transformed_humans_;
-  ros::Duration people_keep_time_;
   boost::recursive_mutex lock_;
-  bool first_time_;
+  bool first_time_, reset;
+  ros::Time last_time;
   double last_min_x_, last_min_y_, last_max_x_, last_max_y_;
+  double radius_, amplitude_, covar_, cutoff_;
+  // double v_cutoff_, v_amplitude_, v_covar_;
 
 };
 }  // namespace human_layers

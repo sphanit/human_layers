@@ -4,7 +4,9 @@
 #include <pluginlib/class_list_macros.h>
 
 #define DEFAULT_HUMAN_PART hanp_msgs::TrackedSegmentType::TORSO
-
+#define TRACKED_HUMAN_SUB "/tracked_humans"
+#define HUMANS_STATES_SUB "/move_base_node/HATebLocalPlannerROS/humans_states"
+// #define HUMANS_STATES_SUB "humans_states"
 
 using costmap_2d::NO_INFORMATION;
 using costmap_2d::LETHAL_OBSTACLE;
@@ -15,10 +17,11 @@ namespace human_layers
 void HumanLayer::onInitialize()
 {
   ros::NodeHandle nh("~/" + name_), g_nh;
+  humans_sub_ = nh.subscribe(TRACKED_HUMAN_SUB, 1, &HumanLayer::humansCB, this);
+  humans_states_sub_ = nh.subscribe(HUMANS_STATES_SUB, 1, &HumanLayer::statesCB, this);
+
   current_ = true;
   first_time_ = true;
-  humans_sub_ = nh.subscribe("/tracked_humans", 1, &HumanLayer::humansCB, this);
-  humans_states_sub_ = nh.subscribe("/move_base_node/TebLocalPlannerROS/humans_states", 1, &HumanLayer::statesCB, this);
 }
 
 void HumanLayer::humansCB(const hanp_msgs::TrackedHumans& humans)
@@ -30,6 +33,8 @@ void HumanLayer::humansCB(const hanp_msgs::TrackedHumans& humans)
 void HumanLayer::statesCB(const hanp_msgs::StateArray& states){
   boost::recursive_mutex::scoped_lock lock(lock_);
   states_ = states;
+  reset = false;
+  last_time = ros::Time::now();
 }
 
 
@@ -41,9 +46,13 @@ void HumanLayer::updateBounds(double origin_x, double origin_y, double origin_z,
   std::string global_frame = layered_costmap_->getGlobalFrameID();
   transformed_humans_.clear();
 
+  if((ros::Time::now()-last_time).toSec() > 1.0){
+    reset = true;
+  }
+
   for(auto &human : humans_.humans){
     for(auto &segment : human.segments){
-      if(segment.type == DEFAULT_HUMAN_PART){
+      if(segment.type == DEFAULT_HUMAN_PART && !reset){
         if((abs(segment.twist.twist.linear.x)+abs(segment.twist.twist.linear.y)+abs(segment.twist.twist.angular.z)) < 0.0001 && !states_.states.empty()){
           if(states_.states[human.track_id-1]==0){
             HumanPoseVel human_pose_vel;
